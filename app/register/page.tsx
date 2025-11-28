@@ -1,0 +1,174 @@
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+
+export default function RegisterPage() {
+    const [name, setName] = useState('')
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [role, setRole] = useState('STUDENT')
+    const [error, setError] = useState('')
+    const [loading, setLoading] = useState(false)
+    const [success, setSuccess] = useState('')
+    const router = useRouter()
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setError('')
+        setSuccess('')
+        setLoading(true)
+
+        const normalizedEmail = email.toLowerCase()
+        if (!normalizedEmail.endsWith('@giki.edu.pk')) {
+            setError('Only @giki.edu.pk emails are allowed')
+            setLoading(false)
+            return
+        }
+
+        try {
+            const res = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password, role }),
+            })
+
+            const data = await res.json()
+
+            if (res.ok) {
+                setSuccess(data.message)
+                // Clear form
+                setName('')
+                setEmail('')
+                setPassword('')
+            } else {
+                if (Array.isArray(data.error)) {
+                    // Handle Zod error array
+                    setError(data.error.map((e: any) => e.message).join(', '))
+                } else {
+                    setError(data.error || 'Registration failed')
+                }
+            }
+        } catch (err) {
+            setError('An error occurred. Please try again.')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    return (
+        <div style={{
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem'
+        }}>
+            <div className="card" style={{ width: '100%', maxWidth: '400px' }}>
+                <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
+                    <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Create an account</h1>
+                    <p className="text-muted text-sm">Enter your details to get started</p>
+                </div>
+
+                {error && (
+                    <div style={{
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        color: '#ef4444',
+                        padding: '0.75rem',
+                        borderRadius: 'var(--radius)',
+                        marginBottom: '1.5rem',
+                        fontSize: '0.875rem',
+                        border: '1px solid rgba(239, 68, 68, 0.2)'
+                    }}>
+                        {error}
+                    </div>
+                )}
+
+                {success && (
+                    <div style={{
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        color: '#16a34a',
+                        padding: '0.75rem',
+                        borderRadius: 'var(--radius)',
+                        marginBottom: '1.5rem',
+                        fontSize: '0.875rem',
+                        border: '1px solid rgba(34, 197, 94, 0.2)'
+                    }}>
+                        {success}
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                    <div>
+                        <label htmlFor="name" style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem', color: 'var(--foreground)' }}>Full Name</label>
+                        <input
+                            id="name"
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            required
+                            className="input"
+                            placeholder="John Doe"
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="email" style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem', color: 'var(--foreground)' }}>Email</label>
+                        <input
+                            id="email"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            className="input"
+                            placeholder="name@giki.edu.pk"
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="password" style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem', color: 'var(--foreground)' }}>Password</label>
+                        <input
+                            id="password"
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            className="input"
+                            placeholder="••••••••"
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="role" style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', marginBottom: '0.5rem', color: 'var(--foreground)' }}>Role</label>
+                        <select
+                            id="role"
+                            value={role}
+                            onChange={(e) => setRole(e.target.value)}
+                            className="input"
+                        >
+                            <option value="STUDENT">Student</option>
+                            <option value="FACULTY">Faculty</option>
+                            <option value="STAFF">Staff</option>
+                            <option value="DEPT_OFFICER">Department Officer</option>
+                            <option value="ADMIN">Admin</option>
+                        </select>
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="btn btn-primary"
+                        style={{ marginTop: '0.5rem', width: '100%' }}
+                        disabled={loading}
+                    >
+                        {loading ? 'Creating account...' : 'Create Account'}
+                    </button>
+                </form>
+
+                <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>
+                    Already have an account? <Link href="/login" style={{ color: 'var(--foreground)', textDecoration: 'underline', textUnderlineOffset: '4px' }}>Login</Link>
+                </div>
+            </div>
+        </div>
+    )
+}

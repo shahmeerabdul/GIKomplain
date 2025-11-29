@@ -24,7 +24,7 @@ export default function Home() {
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent'
         }}>
-          GIKOmplain
+          GIKomplain
         </h1>
         <p style={{
           fontSize: '1.125rem',

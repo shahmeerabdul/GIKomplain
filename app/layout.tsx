@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "GIKOmplain - Complaint Management System",
+  title: "GIKomplain - Complaint Management System",
   description: "GIKI Complaint Management System",
 };
 
